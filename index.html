@@ -1,62 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Interactive Ordination Heatmap</title>
+  <meta charset="UTF-8" />
+  <title>Ordination Heatmap Viewer</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    #heatmap { width: 100%; height: 600px; }
-    .container { margin-top: 30px; }
-  </style>
+  <script src="libs/ml-pca.min.js"></script>
+  <script src="libs/numeric.min.js"></script>
 </head>
 <body>
-<div class="container">
-  <h1>📊 Ordination Heatmap Viewer</h1>
-  <input type="file" id="fileInput" accept=".csv,.tsv" class="form-control" />
-  <br/>
-  <div id="heatmap"></div>
-  <button id="exportBtn" class="btn btn-primary mt-3">Export Image</button>
-</div>
+  <div class="container">
+    <h1>📊 Ordination Heatmap Viewer</h1>
+    <input type="file" id="fileInput" accept=".csv,.tsv" />
+    
+    <div>
+      <label>Choose Plot Type:</label>
+      <select id="plotType">
+        <option value="heatmap">Heatmap</option>
+        <option value="pca">PCA</option>
+        <option value="nmds">NMDS</option>
+      </select>
+    </div>
 
-<script>
-  const parseCSV = (text, delimiter = ',') => {
-    const rows = text.trim().split('\n').map(r => r.split(delimiter));
-    const headers = rows[0].slice(1);
-    const labels = rows.slice(1).map(r => r[0]);
-    const values = rows.slice(1).map(r => r.slice(1).map(Number));
-    return { headers, labels, values };
-  };
+    <button id="exportBtn">Export Image</button>
+    <div id="plot"></div>
+  </div>
 
-  document.getElementById('fileInput').addEventListener('change', (e) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const delimiter = reader.result.includes('\t') ? '\t' : ',';
-      const { headers, labels, values } = parseCSV(reader.result, delimiter);
-
-      Plotly.newPlot('heatmap', [{
-        z: values,
-        x: headers,
-        y: labels,
-        type: 'heatmap',
-        colorscale: 'Viridis',
-        hoverongaps: false
-      }], {
-        title: 'Heatmap Visualization',
-        margin: { t: 50 }
-      });
-    };
-    reader.readAsText(e.target.files[0]);
-  });
-
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    Plotly.downloadImage('heatmap', {
-      format: 'png',
-      width: 1000,
-      height: 800,
-      filename: 'heatmap_export'
-    });
-  });
-</script>
+  <script src="script.js"></script>
 </body>
 </html>
