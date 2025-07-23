@@ -6,12 +6,14 @@ function parseCSV(text, delimiter = ',') {
   return { headers, labels, values };
 }
 
-function computeDistanceMatrix(values) {
+function computeDistanceMatrix(values, method = 'euclidean') {
   const dist = [];
   for (let i = 0; i < values.length; i++) {
     dist[i] = [];
     for (let j = 0; j < values.length; j++) {
-      dist[i][j] = euclidean(values[i], values[j]);
+      if (method === 'jaccard') dist[i][j] = jaccardDistance(values[i], values[j]);
+      else if (method === 'bray') dist[i][j] = brayCurtisDistance(values[i], values[j]);
+      else dist[i][j] = euclidean(values[i], values[j]);
     }
   }
   return dist;
@@ -21,13 +23,29 @@ function euclidean(a, b) {
   return Math.sqrt(a.reduce((sum, val, i) => sum + (val - b[i]) ** 2, 0));
 }
 
+function jaccardDistance(a, b) {
+  let intersection = 0, union = 0;
+  for (let i = 0; i < a.length; i++) {
+    const hasA = a[i] !== 0, hasB = b[i] !== 0;
+    if (hasA || hasB) union++;
+    if (hasA && hasB) intersection++;
+  }
+  return 1 - (intersection / union);
+}
+
+function brayCurtisDistance(a, b) {
+  let sumMin = 0, sumTotal = 0;
+  for (let i = 0; i < a.length; i++) {
+    sumMin += Math.min(a[i], b[i]);
+    sumTotal += a[i] + b[i];
+  }
+  return 1 - (2 * sumMin) / sumTotal;
+}
+
 function drawHeatmap(headers, labels, values) {
   Plotly.newPlot('plot', [{
-    z: values,
-    x: headers,
-    y: labels,
-    type: 'heatmap',
-    colorscale: 'Viridis'
+    z: values, x: headers, y: labels,
+    type: 'heatmap', colorscale: 'Viridis'
   }], { title: 'Heatmap' });
 }
 
@@ -56,8 +74,8 @@ function runNMDS(dist, dim = 2) {
   return coords;
 }
 
-function drawNMDS(labels, values) {
-  const dist = computeDistanceMatrix(values);
+function drawNMDS(labels, values, method) {
+  const dist = computeDistanceMatrix(values, method);
   const coords = runNMDS(dist);
   Plotly.newPlot('plot', [{
     x: coords.map(p => p[0]),
@@ -74,7 +92,7 @@ function drawNMDS(labels, values) {
 
 function runPCoA(dist) {
   const n = dist.length;
-  const D2 = dist.map(r => r.map(d => d ** 2));
+  const D2 = dist.map(row => row.map(d => d ** 2));
   const rowMeans = D2.map(r => r.reduce((a, b) => a + b, 0) / n);
   const colMeans = D2[0].map((_, j) => D2.reduce((a, b) => a + b[j], 0) / n);
   const totalMean = rowMeans.reduce((a, b) => a + b, 0) / n;
@@ -92,8 +110,8 @@ function runPCoA(dist) {
   );
 }
 
-function drawPCoA(labels, values) {
-  const dist = computeDistanceMatrix(values);
+function drawPCoA(labels, values, method) {
+  const dist = computeDistanceMatrix(values, method);
   const coords = runPCoA(dist);
   Plotly.newPlot('plot', [{
     x: coords.map(p => p[0]),
@@ -114,11 +132,12 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     const delimiter = reader.result.includes('\t') ? '\t' : ',';
     const { headers, labels, values } = parseCSV(reader.result, delimiter);
     const method = document.getElementById('plotType').value;
+    const metric = document.getElementById('distanceType').value;
 
     if (method === 'heatmap') drawHeatmap(headers, labels, values);
     else if (method === 'pca') drawPCA(labels, values);
-    else if (method === 'nmds') drawNMDS(labels, values);
-    else if (method === 'pcoa') drawPCoA(labels, values);
+    else if (method === 'nmds') drawNMDS(labels, values, metric);
+    else if (method === 'pcoa') drawPCoA(labels, values, metric);
   };
   reader.readAsText(e.target.files[0]);
 });
