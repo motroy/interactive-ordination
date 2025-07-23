@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Ordination Heatmap Viewer</title>
+  <title>Ordination Viewer</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="libs/ml-pca.min.js"></script>
@@ -10,17 +10,17 @@
 </head>
 <body>
   <div class="container">
-    <h1>📊 Ordination Heatmap Viewer</h1>
+    <h1>🔍 Ordination Viewer</h1>
+
     <input type="file" id="fileInput" accept=".csv,.tsv" />
-    
-    <div>
-      <label>Choose Plot Type:</label>
-      <select id="plotType">
-        <option value="heatmap">Heatmap</option>
-        <option value="pca">PCA</option>
-        <option value="nmds">NMDS</option>
-      </select>
-    </div>
+
+    <label for="plotType">Choose Plot Type:</label>
+    <select id="plotType">
+      <option value="heatmap">Heatmap</option>
+      <option value="pca">PCA</option>
+      <option value="nmds">NMDS</option>
+      <option value="pcoa">PCoA</option>
+    </select>
 
     <button id="exportBtn">Export Image</button>
     <div id="plot"></div>
