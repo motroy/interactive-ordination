@@ -1,3 +1,36 @@
+let parsedData = null;
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const delimiter = reader.result.includes('\t') ? '\t' : ',';
+    parsedData = parseCSV(reader.result, delimiter);
+  };
+  reader.readAsText(e.target.files[0]);
+});
+
+document.getElementById('plotBtn').addEventListener('click', () => {
+  if (!parsedData) return;
+  const { headers, labels, values } = parsedData;
+  const method = document.getElementById('plotType').value;
+  const metric = document.getElementById('distanceType').value;
+
+  if (method === 'heatmap') drawHeatmap(headers, labels, values);
+  else if (method === 'pca') drawPCA(labels, values);
+  else if (method === 'nmds') drawNMDS(labels, values, metric);
+  else if (method === 'pcoa') drawPCoA(labels, values, metric);
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const format = document.getElementById('formatType').value;
+  Plotly.downloadImage('plot', {
+    format: format,
+    width: 1000,
+    height: 800,
+    filename: 'ordination_export'
+  });
+});
+
 function parseCSV(text, delimiter = ',') {
   const rows = text.trim().split('\n').map(r => r.split(delimiter));
   const headers = rows[0].slice(1);
@@ -7,16 +40,13 @@ function parseCSV(text, delimiter = ',') {
 }
 
 function computeDistanceMatrix(values, method = 'euclidean') {
-  const dist = [];
-  for (let i = 0; i < values.length; i++) {
-    dist[i] = [];
-    for (let j = 0; j < values.length; j++) {
-      if (method === 'jaccard') dist[i][j] = jaccardDistance(values[i], values[j]);
-      else if (method === 'bray') dist[i][j] = brayCurtisDistance(values[i], values[j]);
-      else dist[i][j] = euclidean(values[i], values[j]);
-    }
-  }
-  return dist;
+  return values.map((a, i) =>
+    values.map((b, j) =>
+      method === 'jaccard' ? jaccardDistance(a, b) :
+      method === 'bray' ? brayCurtisDistance(a, b) :
+      euclidean(a, b)
+    )
+  );
 }
 
 function euclidean(a, b) {
@@ -24,13 +54,13 @@ function euclidean(a, b) {
 }
 
 function jaccardDistance(a, b) {
-  let intersection = 0, union = 0;
+  let inter = 0, union = 0;
   for (let i = 0; i < a.length; i++) {
     const hasA = a[i] !== 0, hasB = b[i] !== 0;
     if (hasA || hasB) union++;
-    if (hasA && hasB) intersection++;
+    if (hasA && hasB) inter++;
   }
-  return 1 - (intersection / union);
+  return union ? 1 - inter / union : 1;
 }
 
 function brayCurtisDistance(a, b) {
@@ -39,7 +69,7 @@ function brayCurtisDistance(a, b) {
     sumMin += Math.min(a[i], b[i]);
     sumTotal += a[i] + b[i];
   }
-  return 1 - (2 * sumMin) / sumTotal;
+  return sumTotal ? 1 - (2 * sumMin) / sumTotal : 1;
 }
 
 function drawHeatmap(headers, labels, values) {
@@ -55,9 +85,7 @@ function drawPCA(labels, values) {
   Plotly.newPlot('plot', [{
     x: scores.map(p => p[0]),
     y: scores.map(p => p[1]),
-    mode: 'markers',
-    type: 'scatter',
-    text: labels
+    type: 'scatter', mode: 'markers', text: labels
   }], {
     title: 'PCA Ordination',
     xaxis: { title: 'PC1' },
@@ -74,15 +102,13 @@ function runNMDS(dist, dim = 2) {
   return coords;
 }
 
-function drawNMDS(labels, values, method) {
-  const dist = computeDistanceMatrix(values, method);
+function drawNMDS(labels, values, metric) {
+  const dist = computeDistanceMatrix(values, metric);
   const coords = runNMDS(dist);
   Plotly.newPlot('plot', [{
     x: coords.map(p => p[0]),
     y: coords.map(p => p[1]),
-    mode: 'markers',
-    type: 'scatter',
-    text: labels
+    type: 'scatter', mode: 'markers', text: labels
   }], {
     title: 'NMDS Ordination',
     xaxis: { title: 'Axis 1' },
@@ -110,43 +136,12 @@ function runPCoA(dist) {
   );
 }
 
-function drawPCoA(labels, values, method) {
-  const dist = computeDistanceMatrix(values, method);
+function drawPCoA(labels, values, metric) {
+  const dist = computeDistanceMatrix(values, metric);
   const coords = runPCoA(dist);
   Plotly.newPlot('plot', [{
     x: coords.map(p => p[0]),
     y: coords.map(p => p[1]),
-    mode: 'markers',
-    type: 'scatter',
-    text: labels
+    type: 'scatter', mode: 'markers', text: labels
   }], {
-    title: 'PCoA Ordination',
-    xaxis: { title: 'Coord 1' },
-    yaxis: { title: 'Coord 2' }
-  });
-}
-
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const reader = new FileReader();
-  reader.onload = () => {
-    const delimiter = reader.result.includes('\t') ? '\t' : ',';
-    const { headers, labels, values } = parseCSV(reader.result, delimiter);
-    const method = document.getElementById('plotType').value;
-    const metric = document.getElementById('distanceType').value;
-
-    if (method === 'heatmap') drawHeatmap(headers, labels, values);
-    else if (method === 'pca') drawPCA(labels, values);
-    else if (method === 'nmds') drawNMDS(labels, values, metric);
-    else if (method === 'pcoa') drawPCoA(labels, values, metric);
-  };
-  reader.readAsText(e.target.files[0]);
-});
-
-document.getElementById('exportBtn').addEventListener('click', () => {
-  Plotly.downloadImage('plot', {
-    format: 'png',
-    width: 1000,
-    height: 800,
-    filename: 'ordination_export'
-  });
-});
+    title: '
