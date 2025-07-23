@@ -14,12 +14,19 @@
 
     <input type="file" id="fileInput" accept=".csv,.tsv" />
 
-    <label for="plotType">Choose Plot Type:</label>
+    <label for="plotType">Plot Type:</label>
     <select id="plotType">
       <option value="heatmap">Heatmap</option>
       <option value="pca">PCA</option>
       <option value="nmds">NMDS</option>
       <option value="pcoa">PCoA</option>
+    </select>
+
+    <label for="distanceType">Distance Metric:</label>
+    <select id="distanceType">
+      <option value="euclidean">Euclidean</option>
+      <option value="jaccard">Jaccard</option>
+      <option value="bray">Bray-Curtis</option>
     </select>
 
     <button id="exportBtn">Export Image</button>
