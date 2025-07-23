@@ -1,4 +1,4 @@
-import { computeDistanceMatrix } from './distance.js';
+import { computeDistanceMatrix } from 'distance.js';
 
 function runPCA(values) {
   const pca = new ML.PCA(values);
