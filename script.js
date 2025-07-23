@@ -12,8 +12,8 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   });
 });
 
-// Handle Plot button click to trigger visualization
-document.getElementById('plotBtn').addEventListener('click', () => {
+// Render the plot based on current selections
+function renderPlot() {
   const fileInput = document.getElementById('fileInput');
   const method = document.getElementById('plotType').value;
   const metric = document.getElementById('distanceType').value;
@@ -35,7 +35,12 @@ document.getElementById('plotBtn').addEventListener('click', () => {
     else if (method === 'pcoa') drawPCoA(labels, values, metric);
   };
   reader.readAsText(fileInput.files[0]);
-});
+}
+
+// Add event listeners
+document.getElementById('plotBtn').addEventListener('click', renderPlot);
+document.getElementById('plotType').addEventListener('change', renderPlot);
+document.getElementById('distanceType').addEventListener('change', renderPlot);
 
 // Parse CSV or TSV
 function parseCSV(text, delimiter = ',') {
@@ -141,22 +146,34 @@ function drawNMDS(labels, values, metric) {
 
 function runPCoA(dist) {
   const n = dist.length;
+
+  // Square the distance matrix
   const D2 = dist.map(row => row.map(d => d ** 2));
-  const rowMeans = D2.map(r => r.reduce((a, b) => a + b, 0) / n);
-  const colMeans = D2[0].map((_, j) => D2.reduce((a, b) => a + b[j], 0) / n);
-  const totalMean = rowMeans.reduce((a, b) => a + b, 0) / n;
 
-  const B = D2.map((row, i) =>
-    row.map((val, j) => -0.5 * (val - rowMeans[i] - colMeans[j] + totalMean))
-  );
-
+  // Double center the squared distance matrix
+  const J = numeric.sub(numeric.identity(n), numeric.div(numeric.rep([n, n], 1), n));
+  const B = numeric.dot(numeric.dot(J, D2), J);
+  for (let i = 0; i < B.length; i++) {
+    for (let j = 0; j < B[i].length; j++) {
+      B[i][j] *= -0.5;
+    }
+  }
+  
+  // Perform eigendecomposition
   const eig = numeric.eig(B);
   const vectors = eig.E.x;
   const values = eig.lambda.x;
 
-  return vectors.map(row =>
-    [row[0] * Math.sqrt(values[0]), row[1] * Math.sqrt(values[1])]
-  );
+  // Sort eigenvectors by eigenvalues in descending order
+  const sortedIndices = values.map((_, i) => i).sort((a, b) => values[b] - values[a]);
+  const sortedVectors = sortedIndices.map(i => vectors[i]);
+  const sortedValues = sortedIndices.map(i => values[i]);
+
+  // Compute the coordinates, accounting for negative eigenvalues
+  return sortedVectors[0].map((_, i) => [
+    sortedVectors[0][i] * Math.sqrt(Math.max(0, sortedValues[0])),
+    sortedVectors[1][i] * Math.sqrt(Math.max(0, sortedValues[1]))
+  ]);
 }
 
 function drawPCoA(labels, values, metric) {
