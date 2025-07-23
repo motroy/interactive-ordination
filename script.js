@@ -30,7 +30,7 @@ function renderPlot() {
     if (method === 'heatmap') {
       drawHeatmap(headers, labels, values);
     } else {
-      const coords = calculateOrdination(values, method, metric);
+      const coords = calculateOrdination(values, method, document.getElementById('distanceType').value);
       drawOrdination(labels, coords, method);
     }
   };
