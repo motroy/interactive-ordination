@@ -1,8 +1,12 @@
 import { computeDistanceMatrix } from './distance.js';
 
 function runPCA(values) {
-  const pca = new ML.PCA(values);
-  return pca.predict(values);
+  // Center the data
+  const means = numeric.div(numeric.add.apply(null, values), values.length);
+  const centered = values.map(row => numeric.sub(row, means));
+
+  const pca = new ML.PCA(centered);
+  return pca.predict(centered);
 }
 
 function runNMDS(dist, dimensions = 2) {
@@ -40,10 +44,14 @@ function runPCoA(dist) {
   const sortedValues = sortedIndices.map(i => values[i]);
 
   // Compute the coordinates, accounting for negative eigenvalues
-  return sortedVectors[0].map((_, i) => [
-    sortedVectors[0][i] * Math.sqrt(Math.max(0, sortedValues[0])),
-    sortedVectors[1][i] * Math.sqrt(Math.max(0, sortedValues[1]))
-  ]);
+  const coords = [];
+  for (let i = 0; i < n; i++) {
+    coords.push([
+      sortedVectors[0][i] * Math.sqrt(Math.max(0, sortedValues[0])),
+      sortedVectors[1][i] * Math.sqrt(Math.max(0, sortedValues[1]))
+    ]);
+  }
+  return coords;
 }
 
 function calculateOrdination(values, method, metric) {
