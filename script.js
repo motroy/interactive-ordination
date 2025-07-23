@@ -1,6 +1,6 @@
-import { parseCSV } from 'fileReader.js';
-import { calculateOrdination } from 'ordination.js';
-import { drawHeatmap, drawOrdination, downloadImage } from 'plot.js';
+import { parseCSV } from './fileReader.js';
+import { calculateOrdination } from './ordination.js';
+import { drawHeatmap, drawOrdination, downloadImage } from './plot.js';
 
 let parsedData = null;
 
