@@ -1,12 +1,8 @@
 import { computeDistanceMatrix } from './distance.js';
 
 function runPCA(values) {
-  // Center the data
-  const means = numeric.div(numeric.add.apply(null, values), values.length);
-  const centered = values.map(row => numeric.sub(row, means));
-
-  const pca = new ML.PCA(centered);
-  return pca.predict(centered);
+  const pca = new ML.PCA(values);
+  return pca.predict(values);
 }
 
 function runNMDS(dist, dimensions = 2) {
@@ -19,52 +15,61 @@ function runNMDS(dist, dimensions = 2) {
 }
 
 function runPCoA(dist) {
-  const n = dist.length;
+    const n = dist.length;
 
-  // Square the distance matrix
-  const D2 = dist.map(row => row.map(d => d ** 2));
+    // Square the distance matrix
+    const D2 = dist.map(row => row.map(d => d ** 2));
 
-  // Double center the squared distance matrix
-  const J = numeric.sub(numeric.identity(n), numeric.div(numeric.rep([n, n], 1), n));
-  const B = numeric.dot(numeric.dot(J, D2), J);
-  for (let i = 0; i < B.length; i++) {
-    for (let j = 0; j < B[i].length; j++) {
-      B[i][j] *= -0.5;
+    // Double centering
+    const rowSums = D2.map(row => row.reduce((a, b) => a + b, 0));
+    const colSums = numeric.transpose(D2).map(col => col.reduce((a, b) => a + b, 0));
+    const totalSum = rowSums.reduce((a, b) => a + b, 0);
+
+    const B = [];
+    for (let i = 0; i < n; i++) {
+        B[i] = [];
+        for (let j = 0; j < n; j++) {
+            B[i][j] = -0.5 * (D2[i][j] - rowSums[i] / n - colSums[j] / n + totalSum / (n * n));
+        }
     }
-  }
 
-  // Perform eigendecomposition
-  const eig = numeric.eig(B);
-  const vectors = eig.E.x;
-  const values = eig.lambda.x;
+    // Eigendecomposition
+    const eig = numeric.eig(B);
+    const vectors = eig.E.x;
+    const values = eig.lambda.x;
 
-  // Sort eigenvectors by eigenvalues in descending order
-  const sortedIndices = values.map((_, i) => i).sort((a, b) => values[b] - values[a]);
-  const sortedVectors = sortedIndices.map(i => vectors[i]);
-  const sortedValues = sortedIndices.map(i => values[i]);
+    // Sort by eigenvalue
+    const sortedIndices = values.map((_, i) => i).sort((a, b) => values[b] - values[a]);
+    const sortedVectors = sortedIndices.map(i => vectors[i]);
+    const sortedValues = sortedIndices.map(i => values[i]);
 
-  // Compute the coordinates, accounting for negative eigenvalues
-  const coords = [];
-  for (let i = 0; i < n; i++) {
-    coords.push([
-      sortedVectors[0][i] * Math.sqrt(Math.max(0, sortedValues[0])),
-      sortedVectors[1][i] * Math.sqrt(Math.max(0, sortedValues[1]))
-    ]);
-  }
-  return coords;
+    // Get coordinates
+    const coords = [];
+    for (let i = 0; i < n; i++) {
+        coords.push([
+            sortedVectors[0][i] * Math.sqrt(Math.max(0, sortedValues[0])),
+            sortedVectors[1][i] * Math.sqrt(Math.max(0, sortedValues[1]))
+        ]);
+    }
+    return coords;
 }
 
 function calculateOrdination(values, method, metric) {
+    console.log('Input values:', values);
+    let coords;
     if (method === 'pca') {
-        return runPCA(values);
+        coords = runPCA(values);
+    } else {
+        const dist = computeDistanceMatrix(values, metric);
+        console.log('Distance matrix:', dist);
+        if (method === 'nmds') {
+            coords = runNMDS(dist);
+        } else if (method === 'pcoa') {
+            coords = runPCoA(dist);
+        }
     }
-    const dist = computeDistanceMatrix(values, metric);
-    if (method === 'nmds') {
-        return runNMDS(dist);
-    }
-    if (method === 'pcoa') {
-        return runPCoA(dist);
-    }
+    console.log('Output coordinates:', coords);
+    return coords;
 }
 
 
