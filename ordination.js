@@ -1,7 +1,8 @@
 import { computeDistanceMatrix } from './distance.js';
+import { PCA } from 'https://unpkg.com/ml-pca@4.1.1/lib-esm/pca.js';
 
 function runPCA(values) {
-  const pca = new ML.PCA(values);
+  const pca = new PCA(values);
   return pca.predict(values);
 }
 
