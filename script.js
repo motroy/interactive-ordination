@@ -43,7 +43,6 @@ document.getElementById('exportBtn').addEventListener('click', () => {
 
 function renderPlot() {
   if (!parsedData) {
-    alert("Please upload a CSV or TSV file.");
     return;
   }
 
@@ -53,8 +52,14 @@ function renderPlot() {
   if (method === 'heatmap') {
     drawHeatmap(headers, labels, values);
   } else {
-    const metric = document.getElementById('distanceType').value;
-    const coords = calculateOrdination(values, method, metric);
-    drawOrdination(labels, coords, method, parsedMeta);
+    if (!parsedMeta) {
+      const metric = document.getElementById('distanceType').value;
+      const coords = calculateOrdination(values, method, metric);
+      drawOrdination(labels, coords, method, null);
+    } else {
+      const metric = document.getElementById('distanceType').value;
+      const coords = calculateOrdination(values, method, metric);
+      drawOrdination(labels, coords, method, parsedMeta);
+    }
   }
 }
