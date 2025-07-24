@@ -5,6 +5,13 @@
   <title>Ordination Viewer</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "ml-matrix": "https://unpkg.com/ml-matrix@6.10.4/src/index.js"
+      }
+    }
+    </script>
 </head>
 <body>
   <div class="container">
@@ -39,6 +46,6 @@
     <div id="plot"></div>
   </div>
 
-  <script type="module" src="./script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
