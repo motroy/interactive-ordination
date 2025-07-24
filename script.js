@@ -1,8 +1,9 @@
-import { parseCSV } from './fileReader.js';
+import { parseCSV, parseMetadata } from './fileReader.js';
 import { calculateOrdination } from './ordination.js';
 import { drawHeatmap, drawOrdination, downloadImage } from './plot.js';
 
 let parsedData = null;
+let parsedMeta = null;
 
 document.getElementById('fileInput').addEventListener('change', (event) => {
   const file = event.target.files[0];
@@ -13,6 +14,20 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
   reader.onload = (e) => {
     const delimiter = e.target.result.includes('\t') ? '\t' : ',';
     parsedData = parseCSV(e.target.result, delimiter);
+    renderPlot();
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('metaFile').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const delimiter = e.target.result.includes('\t') ? '\t' : ',';
+    parsedMeta = parseMetadata(e.target.result, delimiter);
     renderPlot();
   };
   reader.readAsText(file);
@@ -40,6 +55,6 @@ function renderPlot() {
   } else {
     const metric = document.getElementById('distanceType').value;
     const coords = calculateOrdination(values, method, metric);
-    drawOrdination(labels, coords, method);
+    drawOrdination(labels, coords, method, parsedMeta);
   }
 }
