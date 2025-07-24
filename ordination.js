@@ -1,8 +1,8 @@
 import { computeDistanceMatrix } from './distance.js';
 
 function runPCA(values) {
-  const vectors = PCA.getEigenVectors(values);
-  const adData = PCA.computeAdjustedData(values, vectors[0], vectors[1]);
+  const vectors = window.PCA.getEigenVectors(values);
+  const adData = window.PCA.computeAdjustedData(values, vectors[0], vectors[1]);
   return adData.adjustedData;
 }
 
