@@ -38,7 +38,7 @@ function drawOrdination(labels, coords, method, metadata) {
         type: 'scatter',
         marker: {
           size: 8,
-          color: Plotly.d3.scale.category10().range()[groupSet.indexOf(group)]
+          color: Plotly.colors.qualitative.Plotly[groupSet.indexOf(group)]
         }
       };
     });
