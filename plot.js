@@ -36,14 +36,18 @@ function drawOrdination(labels, coords, method, metadata) {
         name: group,
         mode: 'markers',
         type: 'scatter',
-        marker: { size: 8 }
+        marker: {
+          size: 8,
+          color: Plotly.d3.scale.category10().range()[groupSet.indexOf(group)]
+        }
       };
     });
     Plotly.newPlot('plot', traces, {
       title: title,
       xaxis: { title: xAxis },
       yaxis: { title: yAxis },
-      margin: { t: 50 }
+      margin: { t: 50 },
+      showlegend: true
     });
   } else {
     data[0].marker = { size: 8 };
