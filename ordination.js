@@ -1,9 +1,9 @@
 import { computeDistanceMatrix } from './distance.js';
-import { PCA } from 'ml-pca';
 
 function runPCA(values) {
-  const pca = new PCA(values);
-  return pca.predict(values);
+  const vectors = PCA.getEigenVectors(values);
+  const adData = PCA.computeAdjustedData(values, vectors[0], vectors[1]);
+  return adData.adjustedData;
 }
 
 function runNMDS(dist, dimensions = 2) {
