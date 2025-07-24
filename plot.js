@@ -25,25 +25,31 @@ function drawOrdination(labels, coords, method, metadata) {
   }];
 
   if (metadata) {
-    const { groups, groupLabels } = metadata;
+    const { groups } = metadata;
     const groupSet = [...new Set(groups)];
     const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-    const traces = groupSet.map(group => {
-      const indices = groups.map((g, i) => g === group ? i : -1).filter(i => i !== -1);
-      return {
-        x: indices.map(i => coords[i][0]),
-        y: indices.map(i => coords[i][1]),
-        text: indices.map(i => labels[i]),
-        name: group,
-        mode: 'markers',
-        type: 'scatter',
-        marker: {
-          size: 8,
-          color: colors[groupSet.indexOf(group) % colors.length]
-        }
-      };
+    const colorMap = {};
+    groupSet.forEach((group, i) => {
+      colorMap[group] = colors[i % colors.length];
     });
-    Plotly.newPlot('plot', traces, {
+
+    data[0].marker = {
+      size: 8,
+      color: groups.map(group => colorMap[group])
+    };
+
+    const traces = groupSet.map(group => ({
+      x: [null],
+      y: [null],
+      name: group,
+      mode: 'markers',
+      marker: {
+        color: colorMap[group],
+        size: 8
+      }
+    }));
+
+    Plotly.newPlot('plot', data.concat(traces), {
       title: title,
       xaxis: { title: xAxis },
       yaxis: { title: yAxis },
