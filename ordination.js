@@ -8,9 +8,9 @@ function runPCA(values) {
 
 function runNMDS(dist, dimensions = 2) {
   const n = dist.length;
-  let coords = numeric.random([n, dimensions]);
+  let coords = window.numeric.random([n, dimensions]);
   for (let i = 0; i < 100; i++) {
-    coords = numeric.dot(coords, 0.98);
+    coords = window.numeric.dot(coords, 0.98);
   }
   return coords;
 }
@@ -23,7 +23,7 @@ function runPCoA(dist) {
 
     // Double centering
     const rowSums = D2.map(row => row.reduce((a, b) => a + b, 0));
-    const colSums = numeric.transpose(D2).map(col => col.reduce((a, b) => a + b, 0));
+    const colSums = window.numeric.transpose(D2).map(col => col.reduce((a, b) => a + b, 0));
     const totalSum = rowSums.reduce((a, b) => a + b, 0);
 
     const B = [];
@@ -35,7 +35,7 @@ function runPCoA(dist) {
     }
 
     // Eigendecomposition
-    const eig = numeric.eig(B);
+    const eig = window.numeric.eig(B);
     const vectors = eig.E.x;
     const values = eig.lambda.x;
 
