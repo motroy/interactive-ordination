@@ -8,9 +8,9 @@ function runPCA(values) {
 
 function runNMDS(dist, dimensions = 2) {
   const n = dist.length;
-  let coords = window.numeric.Matrix(window.numeric.random([n, dimensions]));
+  let coords = window.numeric.random([n, dimensions]);
   for (let i = 0; i < 100; i++) {
-    coords = window.numeric.dot(coords, 0.98);
+    coords = window.numeric.mul(coords, 0.98);
   }
   return coords;
 }
