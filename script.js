@@ -1,5 +1,5 @@
 import { parseCSV, parseMetadata } from './fileReader.js';
-import { calculateOrdination } from './ordination.js';
+import { initWasm, calculateOrdination, isWasmReady } from './wasm-loader.js';
 import { drawHeatmap, drawOrdination, downloadImage } from './plot.js';
 
 let parsedData = null;
@@ -19,6 +19,29 @@ const dataUpload = document.getElementById('dataUpload');
 const metaUpload = document.getElementById('metaUpload');
 const dataFileName = document.getElementById('dataFileName');
 const metaFileName = document.getElementById('metaFileName');
+const wasmStatus = document.getElementById('wasmStatus');
+
+// Initialize WebAssembly module
+async function initializeApp() {
+  showStatus('Loading WebAssembly module...', 'loading');
+
+  try {
+    await initWasm();
+    showStatus('WebAssembly loaded successfully', 'success');
+    if (wasmStatus) {
+      wasmStatus.textContent = 'WASM Ready';
+      wasmStatus.classList.add('ready');
+    }
+    // Enable controls
+    plotBtn.disabled = false;
+  } catch (error) {
+    showStatus('Failed to load WebAssembly: ' + error.message, 'error');
+    if (wasmStatus) {
+      wasmStatus.textContent = 'WASM Failed';
+      wasmStatus.classList.add('error');
+    }
+  }
+}
 
 // File input handlers
 fileInput.addEventListener('change', (event) => {
@@ -119,6 +142,11 @@ function renderPlot() {
     return;
   }
 
+  if (!isWasmReady()) {
+    showStatus('WebAssembly module not ready yet', 'error');
+    return;
+  }
+
   const method = plotType.value;
   const { headers, labels, values } = parsedData;
 
@@ -137,6 +165,8 @@ function renderPlot() {
       showStatus(`Heatmap generated: ${labels.length} samples x ${headers.length} features`, 'success');
     } else {
       const metric = distanceType.value;
+
+      // Use WASM for ordination calculation
       const coords = calculateOrdination(values, method, metric);
 
       if (parsedMeta) {
@@ -147,7 +177,7 @@ function renderPlot() {
 
       const methodName = method.toUpperCase();
       const metricName = method === 'pca' ? '' : ` (${metric})`;
-      showStatus(`${methodName} ordination complete${metricName}`, 'success');
+      showStatus(`${methodName} ordination complete${metricName} [WASM]`, 'success');
     }
   } catch (error) {
     console.error('Plot error:', error);
@@ -157,3 +187,9 @@ function renderPlot() {
 
 // Initialize distance visibility on load
 updateDistanceVisibility();
+
+// Disable plot button until WASM is ready
+plotBtn.disabled = true;
+
+// Start initialization
+initializeApp();
