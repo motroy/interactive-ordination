@@ -2,45 +2,122 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Ordination Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Ordination Viewer</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/numeric@1.2.6/numeric-1.2.6.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pca-js@1.0.2/pca.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>🔍 Ordination Viewer</h1>
+  <div class="app-container">
+    <header class="header">
+      <h1>Interactive Ordination Viewer</h1>
+      <p class="subtitle">Visualize multivariate data with PCA, NMDS, PCoA, and Heatmaps</p>
+    </header>
 
-    <input type="file" id="fileInput" accept=".csv,.tsv" />
-    <label for="metaFile">Metadata File:</label>
-    <input type="file" id="metaFile" accept=".csv,.tsv" />
+    <main class="main-content">
+      <aside class="sidebar">
+        <section class="card">
+          <h2 class="card-title">Data Input</h2>
 
-    <label for="plotType">Plot Type:</label>
-    <select id="plotType">
-      <option value="heatmap">Heatmap</option>
-      <option value="pca">PCA</option>
-      <option value="nmds">NMDS</option>
-      <option value="pcoa">PCoA</option>
-    </select>
+          <div class="form-group">
+            <label for="fileInput" class="form-label">Data File</label>
+            <div class="file-upload" id="dataUpload">
+              <input type="file" id="fileInput" accept=".csv,.tsv" />
+              <div class="file-upload-content">
+                <span class="file-upload-icon">+</span>
+                <span class="file-upload-text">Choose CSV or TSV file</span>
+              </div>
+              <span class="file-name" id="dataFileName"></span>
+            </div>
+            <span class="form-hint">Samples as rows, features as columns</span>
+          </div>
 
-    <label for="distanceType">Distance Metric:</label>
-    <select id="distanceType">
-      <option value="euclidean">Euclidean</option>
-      <option value="jaccard">Jaccard</option>
-      <option value="bray">Bray-Curtis</option>
-    </select>
-    <br></br>
-    <button id="plotBtn">Plot</button>
+          <div class="form-group">
+            <label for="metaFile" class="form-label">Metadata File (optional)</label>
+            <div class="file-upload" id="metaUpload">
+              <input type="file" id="metaFile" accept=".csv,.tsv" />
+              <div class="file-upload-content">
+                <span class="file-upload-icon">+</span>
+                <span class="file-upload-text">Choose metadata file</span>
+              </div>
+              <span class="file-name" id="metaFileName"></span>
+            </div>
+            <span class="form-hint">Sample names and group assignments</span>
+          </div>
+        </section>
 
-    <label for="formatType">Download Format:</label>
-    <select id="formatType">
-      <option value="png">PNG</option>
-      <option value="svg">SVG</option>
-    </select>
-    <button id="exportBtn">Download Image</button>
+        <section class="card">
+          <h2 class="card-title">Visualization Settings</h2>
 
-    <div id="plot"></div>
+          <div class="form-group">
+            <label for="plotType" class="form-label">Plot Type</label>
+            <select id="plotType" class="form-select">
+              <option value="heatmap">Heatmap</option>
+              <option value="pca">PCA</option>
+              <option value="nmds">NMDS</option>
+              <option value="pcoa">PCoA</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="distanceGroup">
+            <label for="distanceType" class="form-label">Distance Metric</label>
+            <select id="distanceType" class="form-select">
+              <option value="euclidean">Euclidean</option>
+              <option value="jaccard">Jaccard</option>
+              <option value="bray">Bray-Curtis</option>
+            </select>
+          </div>
+
+          <button id="plotBtn" class="btn btn-primary">
+            <span class="btn-text">Generate Plot</span>
+            <span class="btn-loader" hidden></span>
+          </button>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Export</h2>
+
+          <div class="form-group">
+            <label for="formatType" class="form-label">Download Format</label>
+            <select id="formatType" class="form-select">
+              <option value="png">PNG Image</option>
+              <option value="svg">SVG Vector</option>
+            </select>
+          </div>
+
+          <button id="exportBtn" class="btn btn-secondary" disabled>
+            Download Image
+          </button>
+        </section>
+      </aside>
+
+      <section class="plot-area">
+        <div class="card plot-card">
+          <div id="plot" class="plot-container">
+            <div class="plot-placeholder">
+              <div class="placeholder-icon">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="9" cy="13" r="2"/>
+                  <circle cx="15" cy="9" r="2"/>
+                  <circle cx="12" cy="16" r="2"/>
+                  <circle cx="17" cy="14" r="2"/>
+                </svg>
+              </div>
+              <p class="placeholder-text">Upload a data file to get started</p>
+              <p class="placeholder-hint">Supported formats: CSV, TSV</p>
+            </div>
+          </div>
+          <div id="plotStatus" class="plot-status" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Interactive Ordination Viewer &mdash; Explore your multivariate data</p>
+    </footer>
   </div>
 
   <script type="module" src="script.js"></script>
