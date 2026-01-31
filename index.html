@@ -6,14 +6,15 @@
   <title>Interactive Ordination Viewer</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/numeric@1.2.6/numeric-1.2.6.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pca-js@1.0.2/pca.min.js"></script>
 </head>
 <body>
   <div class="app-container">
     <header class="header">
-      <h1>Interactive Ordination Viewer</h1>
-      <p class="subtitle">Visualize multivariate data with PCA, NMDS, PCoA, and Heatmaps</p>
+      <div class="header-content">
+        <h1>Interactive Ordination Viewer</h1>
+        <p class="subtitle">Visualize multivariate data with PCA, NMDS, PCoA, and Heatmaps</p>
+      </div>
+      <div class="wasm-badge" id="wasmStatus">Loading WASM...</div>
     </header>
 
     <main class="main-content">
@@ -70,7 +71,7 @@
             </select>
           </div>
 
-          <button id="plotBtn" class="btn btn-primary">
+          <button id="plotBtn" class="btn btn-primary" disabled>
             <span class="btn-text">Generate Plot</span>
             <span class="btn-loader" hidden></span>
           </button>
@@ -90,6 +91,15 @@
           <button id="exportBtn" class="btn btn-secondary" disabled>
             Download Image
           </button>
+        </section>
+
+        <section class="card card-info">
+          <h2 class="card-title">About</h2>
+          <p class="info-text">
+            This application uses <strong>WebAssembly</strong> for high-performance
+            ordination calculations. Distance matrices, PCA, NMDS, and PCoA are
+            computed using Rust compiled to WASM.
+          </p>
         </section>
       </aside>
 
@@ -116,7 +126,7 @@
     </main>
 
     <footer class="footer">
-      <p>Interactive Ordination Viewer &mdash; Explore your multivariate data</p>
+      <p>Interactive Ordination Viewer &mdash; Powered by WebAssembly</p>
     </footer>
   </div>
 
